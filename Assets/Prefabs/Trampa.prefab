@@ -1542,6 +1542,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bbc1cd707d19fd489977192ab19805a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  "da\xF1o": 5
+  veneno: 0
 --- !u!33 &6796378915093253171
 MeshFilter:
   m_ObjectHideFlags: 0

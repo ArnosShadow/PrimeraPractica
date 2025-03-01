@@ -1,28 +1,38 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.ProBuilder.Shapes;
+using UnityEngine.Rendering;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Coleccionables")]
+    [SerializeField] private int balas = 10;
+    [SerializeField] private int monedas = 0;
+
+    [Header("Propiedades")]
     [SerializeField] private float salud = 100f;
     private float jumpForce = 5f;
     private int saltosMaximos = 2;
-    private int monedas = 0;
     private int saltos;
     [SerializeField] private float speed;
+    [SerializeField] private Transform lastCheckPoint;
 
     private Rigidbody rb;
+    private UIEstadisticas estadisticas;
 
-    [Header("Distancia")]
-    [SerializeField] private float distance;
-    [SerializeField] private LayerMask whatIsInteractuable;
-    [SerializeField] private Transform interactionPoint;
-    [SerializeField] private float radioInteraccion;
+    [Header("Dash")]
+    [SerializeField] private float dash = 20f;
+    [SerializeField] private float duracionDash = 0.2f;
+    [SerializeField] private float EsperaDash = 1f;
+    private bool puedeDash = true;
+    private bool estaDasheando = false;
 
 
     private float hInput, vInput;
 
     void Start()
     {
+        estadisticas = FindObjectOfType<UIEstadisticas>();
         rb = GetComponent<Rigidbody>();
         saltos = saltosMaximos;
     }
@@ -30,8 +40,11 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         // Movimiento horizontal
-        hInput = Input.GetAxisRaw("Horizontal");
-        vInput = Input.GetAxisRaw("Vertical");
+        hInput = -Input.GetAxisRaw("Horizontal");
+        vInput = -Input.GetAxisRaw("Vertical");
+
+        if (vInput > 0)
+            vInput = 0; 
 
 
         // Salto
@@ -40,11 +53,41 @@ public class PlayerMovement : MonoBehaviour
             rb.AddForce(new Vector3(0, 1, 0) * jumpForce, ForceMode.Impulse);
             saltos--;
         }
+
+        //Dash
+        if (Input.GetKeyDown(KeyCode.LeftShift) && puedeDash)
+        {
+
+                StartCoroutine(Dash()); // Iniciar la corrutina correctamente
+        
+        }
+
+
+        if (salud <= 0) {
+            transform.position = lastCheckPoint.position;
+            transform.eulerAngles = Vector3.zero;
+            salud = 100f;
+        }
     }
     private void FixedUpdate()
     {
         rb.AddForce(new Vector3(hInput, 0, vInput).normalized * speed, ForceMode.Force);
 
+    }
+
+    private IEnumerator Dash()
+    {
+        puedeDash = false;
+        estaDasheando = true;
+
+        rb.AddForce(new Vector3(hInput, 0, vInput).normalized * dash, ForceMode.Impulse);
+
+        yield return new WaitForSeconds(duracionDash);
+
+        estaDasheando = false;
+
+        yield return new WaitForSeconds(EsperaDash);
+        puedeDash = true;
     }
     private void OnCollisionEnter(Collision collision)
     {
@@ -56,6 +99,7 @@ public class PlayerMovement : MonoBehaviour
         {
             collision.gameObject.TryGetComponent(out trampa trampaScript);
             salud -=trampaScript.Trampa;
+            estadisticas.TakeDamage(trampaScript.Trampa);
         }
     }
 
@@ -64,7 +108,24 @@ public class PlayerMovement : MonoBehaviour
         //if (other.gameObject.CompareTag("Monedita"))
         if (other.gameObject.TryGetComponent(out moneda monedaScript))
         {
-            monedas += ((int)monedaScript.Monedas);
+            int coin = ((int)monedaScript.Monedas);
+            monedas += coin;
+            estadisticas.TakeMoneda(monedas);
+            Destroy(other.gameObject);
+        }
+
+        if (other.gameObject.TryGetComponent(out bala balasScript))
+        {
+            int bullet = ((int)balasScript.Bala);
+            balas += bullet;
+            Debug.Log(balas);
+            if (balas  > 10) {
+                balas = 10;
+                Debug.Log(balas);
+
+            }
+
+            estadisticas.TakeMunicion(balas);
             Destroy(other.gameObject);
         }
     }

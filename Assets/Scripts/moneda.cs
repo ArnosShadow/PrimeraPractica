@@ -25,8 +25,6 @@ public class moneda : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //Space.World: Coordenadas globales
-        //Space.Self: Coordenadas locales
         transform.Rotate(Vector3.up * rotacion * Time.deltaTime, Space.World);
     }
 }
