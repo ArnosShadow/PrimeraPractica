@@ -6,7 +6,9 @@ using UnityEngine.SceneManagement;
 public class CanvasManager : MonoBehaviour
 {
     [SerializeField] private GameObject panelTienda;
-    [SerializeField] private GameObject panelSalir;
+    [SerializeField] private Material[] materialesDisponibles; 
+
+   
     //Método asociado al click del boton de Inicio
     public void OnPlayButtonClicked()
     {
@@ -20,20 +22,20 @@ public class CanvasManager : MonoBehaviour
     public void OnTiendaButtonClicked()
     {
         panelTienda.SetActive(true);
-        panelSalir.SetActive(false);
-    }
-    public void OnSalirButtonClicked()
-    {
-        panelTienda.SetActive(false);
-        panelSalir.SetActive(true);
     }
 
-    public void OnSeleccionarButtonClicked()
-    {
-        //Selecciona el material para el jugador
-    }
     public void OnQuitButtonClicked()
     {
         Application.Quit();
+    }
+
+    public void OnObjetoButtonClicked(int index)
+    {
+        if (index >= 0 && index < materialesDisponibles.Length)
+        {
+            string nombreMaterial = materialesDisponibles[index].name;
+            PlayerPrefs.SetString("MaterialSeleccionado", nombreMaterial);
+            PlayerPrefs.Save();
+        }
     }
 }

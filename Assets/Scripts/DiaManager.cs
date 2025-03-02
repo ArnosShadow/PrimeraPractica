@@ -9,7 +9,6 @@ public class DiaManager : MonoBehaviour
     [SerializeField] private Material dia;
     [SerializeField] private Material noche;
 
-    private bool esDeDia = true;
     void Start()
     {
         Dia();
@@ -27,7 +26,6 @@ public class DiaManager : MonoBehaviour
         }
     }
     private void Dia() {
-        esDeDia = true;
         RenderSettings.skybox = dia;
         luzSolar.intensity = 1f;
         luzSolar.transform.rotation = Quaternion.Euler(50f, 0, 0);
@@ -35,7 +33,6 @@ public class DiaManager : MonoBehaviour
     }
 
     private void Noche() {
-        esDeDia = false;
         RenderSettings.skybox = noche;
         luzSolar.intensity = 0.2f;
         luzSolar.transform.rotation = Quaternion.Euler(-50f, 0, 0);
