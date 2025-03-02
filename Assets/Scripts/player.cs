@@ -11,7 +11,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Propiedades")]
     [SerializeField] private float salud = 100f;
-    [SerializeField] private float jumpForce = 1000f;
+    [SerializeField] private float jumpForce = 1500f;
     [SerializeField] private int saltosMaximos = 2;
     [SerializeField] private int saltos;
     [SerializeField] private float speed;
@@ -141,7 +141,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Suelo") || collision.gameObject.CompareTag("Trampa") || collision.gameObject.CompareTag("Lava"))
+        if (collision.gameObject.CompareTag("Suelo") || collision.gameObject.CompareTag("Trampa") || collision.gameObject.CompareTag("TrampaLava"))
         {
             saltos = saltosMaximos; 
         }

@@ -8,6 +8,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Start()
     {
+        canvasJuegoGanado.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
