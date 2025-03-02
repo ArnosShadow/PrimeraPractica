@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.ProBuilder.Shapes;
 using UnityEngine.Rendering;
@@ -11,9 +11,9 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Propiedades")]
     [SerializeField] private float salud = 100f;
-    private float jumpForce = 5f;
-    private int saltosMaximos = 2;
-    private int saltos;
+    [SerializeField] private float jumpForce = 1000f;
+    [SerializeField] private int saltosMaximos = 2;
+    [SerializeField] private int saltos;
     [SerializeField] private float speed;
     [SerializeField] private Transform lastCheckPoint;
 
@@ -28,8 +28,13 @@ public class PlayerMovement : MonoBehaviour
     private bool estaDasheando = false;
 
 
-    private float hInput, vInput;
+    [Header("Disparo")]
+    [SerializeField] private GameObject prefabBala; 
+    [SerializeField] private Transform spawnBala;
+    [SerializeField] private float velocidadBala = 10f;
 
+    private float hInput, vInput;
+    public Transform arma;
     void Start()
     {
         estadisticas = FindObjectOfType<UIEstadisticas>();
@@ -37,8 +42,29 @@ public class PlayerMovement : MonoBehaviour
         saltos = saltosMaximos;
     }
 
+    private void Disparar()
+    {
+        if (balas <= 0) return;
+
+        Vector3 posicionInicial = spawnBala.position - spawnBala.forward * 1.5f;
+        GameObject balaInstanciada = Instantiate(prefabBala, posicionInicial, spawnBala.rotation);
+
+        Rigidbody rbBala = balaInstanciada.GetComponent<Rigidbody>();
+
+
+        rbBala.useGravity = true;
+        rbBala.velocity = Quaternion.Euler(-20f, 0f, 0f) * -spawnBala.forward * velocidadBala;
+
+
+        balas--;
+        estadisticas.TakeMunicion(balas);
+    }
+
+
+
     void Update()
     {
+
         // Movimiento horizontal
         hInput = -Input.GetAxisRaw("Horizontal");
         vInput = -Input.GetAxisRaw("Vertical");
@@ -58,15 +84,36 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift) && puedeDash)
         {
 
-                StartCoroutine(Dash()); // Iniciar la corrutina correctamente
+                StartCoroutine(Dash()); // Corrutina
         
         }
 
+        // Disparar
+        if (Input.GetMouseButtonDown(0) && balas > 0)
+        {
+            Disparar();
+        }
 
-        if (salud <= 0) {
-            transform.position = lastCheckPoint.position;
-            transform.eulerAngles = Vector3.zero;
+        if (salud <= 0|| transform.position.y < -5) {
+            Debug.Log("Jugador ha muerto. Reapareciendo en: " + lastCheckPoint.position);
+
+
+            if (lastCheckPoint != null)
+            {
+                transform.position = lastCheckPoint.position;
+            }
+            else
+            {
+                transform.position = Vector3.zero;
+            }
+
+            transform.rotation = Quaternion.identity;
+
+
+            Camera.main.transform.rotation = Quaternion.identity;
+            
             salud = 100f;
+            rb.velocity = Vector3.zero;
         }
     }
     private void FixedUpdate()
@@ -74,7 +121,10 @@ public class PlayerMovement : MonoBehaviour
         rb.AddForce(new Vector3(hInput, 0, vInput).normalized * speed, ForceMode.Force);
 
     }
-
+    public void SetCheckpoint(Transform checkpoint)
+    {
+        lastCheckPoint = checkpoint;
+    }
     private IEnumerator Dash()
     {
         puedeDash = false;
@@ -91,16 +141,21 @@ public class PlayerMovement : MonoBehaviour
     }
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Suelo"))
+        if (collision.gameObject.CompareTag("Suelo") || collision.gameObject.CompareTag("Trampa") || collision.gameObject.CompareTag("Lava"))
         {
             saltos = saltosMaximos; 
         }
-        if (collision.gameObject.CompareTag("Trampa"))
+        if (collision.gameObject.CompareTag("Trampa") || collision.gameObject.CompareTag("Lava"))
         {
             collision.gameObject.TryGetComponent(out trampa trampaScript);
             salud -=trampaScript.Trampa;
             estadisticas.TakeDamage(trampaScript.Trampa);
         }
+        if (collision.gameObject.CompareTag("TrampaLava"))
+        {
+            Destroy(collision.gameObject);
+        }
+
     }
 
     private void OnTriggerEnter(Collider other)
@@ -121,7 +176,6 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log(balas);
             if (balas  > 10) {
                 balas = 10;
-                Debug.Log(balas);
 
             }
 

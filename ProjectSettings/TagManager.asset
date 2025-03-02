@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Suelo
   - Trampa
+  - Checkpoint
+  - Bala
+  - Lava
+  - TrampaLava
   layers:
   - Default
   - TransparentFX
